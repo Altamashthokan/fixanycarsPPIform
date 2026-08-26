@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+<title>Fixanycars | Pre-Purchase Inspection Form</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+  :root{
+    --black:#0d0d0d;
+    --near-black:#171717;
+    --red:#e2001a;
+    --red-dark:#b40015;
+    --white:#ffffff;
+    --grey-50:#f6f6f7;
+    --grey-100:#eeeeef;
+    --grey-200:#e2e2e4;
+    --grey-400:#a8a8ac;
+    --grey-600:#6c6c72;
+    --grey-800:#2b2b2e;
+    --pass:#1b8a3a;
+    --pass-bg:#e7f6ec;
+    --fail:#e2001a;
+    --fail-bg:#fdeaec;
+    --na-bg:#eeeeef;
+    --na:#6c6c72;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(0,0,0,.04), 0 8px 24px -12px rgba(0,0,0,.12);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0; touch-action:manipulation;}
+  body{
+    font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+    background:var(--grey-50);
+    color:var(--black);
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  h1,h2,h3,.disp{font-family:'Barlow Condensed',sans-serif; letter-spacing:.02em; text-transform:uppercase;}
+
+  /* ---------- App shell ---------- */
+  .app{display:flex; min-height:100vh;}
+  .rail{
+    width:245px; flex:0 0 245px; background:var(--black); color:var(--white);
+    position:sticky; top:0; height:100vh; overflow-y:auto; padding:20px 0 18px;
+  }
+  .rail-brand{display:flex; align-items:center; justify-content:center; padding:0 16px 18px; border-bottom:1px solid #262626;}
+  .logo-box{
+    background:#ffffff;
+    border-radius:8px;
+    padding:6px 10px 4px 10px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 2px 8px rgba(0,0,0,0.25);
+  }
+  .logo-box img, .logo-box svg{
+    height:30px;
+    width:auto;
+    max-width:100%;
+    object-fit:contain;
+    display:block;
+  }
+
+  .rail nav{padding:14px 10px;}
+  .rail a{
+    display:flex; align-items:center; gap:10px; padding:9px 12px; margin:2px 0; border-radius:9px;
+    color:#c9c9cc; text-decoration:none; font-size:13.5px; font-weight:600; cursor:pointer;
+    transition:background .15s, color .15s;
+  }
+  .rail a .n{
+    width:20px; height:20px; border-radius:50%; background:#262626; color:#9a9a9e;
+    display:flex; align-items:center; justify-content:center; font-size:10.5px; font-weight:800; flex:0 0 20px;
+  }
+  .rail a:hover{background:#1c1c1c; color:#fff;}
+  .rail a.done .n{background:var(--red); color:#fff;}
+  .rail-progress{padding:16px 20px 4px;}
+  .rail-progress .bar{height:6px; border-radius:4px; background:#262626; overflow:hidden;}
+  .rail-progress .bar > i{display:block; height:100%; background:var(--red); width:0%; transition:width .25s;}
+  .rail-progress .lbl{font-size:11px; color:#9a9a9e; margin-top:6px; letter-spacing:.03em; text-transform:uppercase;}
+
+  .main{flex:1; min-width:0;}
+  .topbar{
+    position:sticky; top:0; z-index:30; background:var(--white); border-bottom:1px solid var(--grey-200);
+    display:flex; align-items:center; justify-content:space-between; padding:14px 28px;
+  }
+  .topbar h1{margin:0; font-size:22px; font-weight:700;}
+  .topbar .sub{font-size:12px; color:var(--grey-600); text-transform:none; font-family:'Inter'; letter-spacing:0; font-weight:500;}
+  .btn{
+    border:none; cursor:pointer; font-family:'Inter'; font-weight:700; font-size:13.5px;
+    padding:12px 18px; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    transition:transform .12s, box-shadow .12s; min-height:44px; touch-action:manipulation;
+  }
+  .btn:active{transform:scale(0.98);}
+  .btn-red{background:var(--red); color:#fff; box-shadow:0 6px 16px -6px rgba(226,0,26,.55);}
+  .btn-red:hover{background:var(--red-dark);}
+  .btn-outline{background:#fff; color:var(--black); border:1.5px solid var(--grey-200);}
+  .btn-outline:hover{border-color:var(--black);}
+
+  /* Mobile Header & Slide Drawer */
+  .mobile-header {
+    display: none;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: var(--black);
+    color: #fff;
+    padding: 12px 16px;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .mobile-header .logo-box {
+    padding: 3px 8px 1px;
+  }
+  .mobile-header .logo-box img, .mobile-header .logo-box svg {
+    height: 24px;
+  }
+  .mobile-menu-btn {
+    background: #262626;
+    border: none;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .mobile-drawer-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100;
+    opacity: 0; pointer-events: none; transition: opacity .25s ease;
+  }
+  .mobile-drawer-overlay.active { opacity: 1; pointer-events: auto; }
+  
+  .mobile-drawer {
+    position: fixed; top: 0; left: 0; bottom: 0; width: 280px; background: var(--black);
+    z-index: 101; transform: translateX(-100%); transition: transform .25s ease;
+    display: flex; flex-direction: column; padding: 20px 0; overflow-y: auto;
+  }
+  .mobile-drawer.active { transform: translateX(0); }
+  .mobile-drawer-close {
+    align-self: flex-end; margin: 0 16px 12px; background: #262626; color: #fff;
+    border: none; border-radius: 50%; width: 32px; height: 32px; font-weight: bold; font-size: 16px;
+  }
+
+  .content{max-width:980px; margin:0 auto; padding:26px 28px 90px;}
+  section.card{
+    background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--grey-100);
+    padding:26px 26px 24px; margin-bottom:22px; scroll-margin-top:80px;
+  }
+  section.card > .head{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;}
+  section.card > .head h2{margin:0; font-size:24px; font-weight:700; display:flex; align-items:center; gap:10px;}
+  section.card > .head h2 .tag{
+    background:var(--black); color:#fff; font-family:'Inter'; text-transform:none; letter-spacing:0;
+    font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:20px;
+  }
+  .desc{font-size:13px; color:var(--grey-600); margin:-10px 0 18px; font-weight:500;}
+
+  /* meta grid (cover) */
+  .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  .grid.cols2{grid-template-columns:repeat(2,1fr);}
+  .field label{display:block; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--grey-600); margin-bottom:6px;}
+  .field input, .field select, .field textarea{
+    width:100%; border:1.5px solid var(--grey-200); border-radius:9px; padding:12px 12px; font-size:14px;
+    font-family:'Inter'; color:var(--black); background:#fff; outline:none; transition:border-color .12s;
+    min-height: 44px;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{border-color:var(--red);}
+  .field textarea{resize:vertical; min-height:80px;}
+
+  .photo-drop{
+    border:1.5px dashed var(--grey-200); border-radius:10px; padding:8px; text-align:center; cursor:pointer;
+    font-size:12px; color:var(--grey-600); font-weight:600; position:relative; overflow:hidden; min-height:72px;
+    display:flex; align-items:center; justify-content:center; background:var(--grey-50); touch-action:manipulation;
+    width:100%;
+  }
+  .photo-drop:hover{border-color:var(--red); color:var(--red);}
+  .photo-drop img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:9px;}
+  .photo-drop input{position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;}
+  .photo-drop .x{position:absolute; top:4px; right:4px; background:rgba(0,0,0,.65); color:#fff; border-radius:50%; width:24px; height:24px; font-size:14px; display:flex; align-items:center; justify-content:center; z-index:2;}
+
+  /* status pill 3-way toggle */
+  .status-toggle{display:inline-flex; border-radius:8px; overflow:hidden; border:1.5px solid var(--grey-200); min-height:36px; width:100%;}
+  .status-toggle button{
+    flex:1; border:none; background:#fff; font-family:'Inter'; font-weight:700; font-size:11px; letter-spacing:.02em;
+    padding:6px 4px; cursor:pointer; color:var(--grey-600); text-transform:uppercase; touch-action:manipulation; min-height:34px; text-align:center;
+  }
+  .status-toggle button + button{border-left:1.5px solid var(--grey-200);}
+  .status-toggle button.active.pass{background:var(--pass-bg); color:var(--pass);}
+  .status-toggle button.active.fail{background:var(--fail-bg); color:var(--fail);}
+  .status-toggle button.active.na{background:var(--na-bg); color:var(--na);}
+
+  /* generic item card used across checklist sections */
+  .item{
+    border:1px solid var(--grey-100); border-radius:12px; padding:14px; background:var(--grey-50); display:flex; flex-direction:column; justify-content:space-between; gap:10px;
+  }
+  .item .row1{display:flex; flex-direction:column; gap:8px;}
+  .item .row1 .name{font-weight:700; font-size:13.5px; line-height:1.2; color:var(--black);}
+  .item .note{margin-top:2px;}
+  .item .note textarea{min-height:50px; font-size:13px;}
+
+  /* 5-Column Grid Layout Fix for Tyres & Rims */
+  .position-grid{
+    display:grid;
+    grid-template-columns:repeat(5, 1fr);
+    gap:12px;
+  }
+
+  .checklist-strip{display:grid; grid-template-columns:repeat(2,1fr); gap:10px;}
+  .strip-item{
+    display:flex; align-items:center; justify-content:space-between; gap:10px; border:1px solid var(--grey-100);
+    background:var(--grey-50); border-radius:10px; padding:10px 12px; min-height:48px;
+  }
+  .strip-item .name{font-size:13px; font-weight:700;}
+
+  .panel-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px;}
+  .damage-chips{display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;}
+  .chip{
+    border:1.5px solid var(--grey-200); border-radius:20px; padding:6px 10px; font-size:11px; font-weight:700;
+    cursor:pointer; color:var(--grey-600); user-select:none; min-height:30px; display:inline-flex; align-items:center;
+  }
+  .chip.active{background:var(--black); border-color:var(--black); color:#fff;}
+
+  /* Mobile and Tablet responsive overrides */
+  @media (max-width:1100px){
+    .position-grid{grid-template-columns:repeat(3, 1fr);}
+  }
+
+  @media (max-width:880px){
+    .rail{display:none;}
+    .mobile-header{display:flex;}
+    .topbar{flex-direction:column; align-items:flex-start; gap:12px; padding:14px 16px;}
+    .topbar > div:last-child{width:100%; display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;}
+    .topbar .btn{padding:8px 6px; font-size:12px; width:100%; text-align:center;}
+    .content{padding:16px 14px 100px;}
+    section.card{padding:16px 14px;}
+    .grid, .grid.cols2, .position-grid, .panel-grid, .checklist-strip{grid-template-columns:1fr;}
+    
+    .field input, .field select, .field textarea {
+      font-size: 16px !important;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .topbar h1{font-size:18px;}
+    .topbar .sub{font-size:11px;}
+    .status-toggle button{padding:6px 4px; font-size:10px;}
+  }
+
+  /* ---------------- PRINT / PDF REPORT STYLES ---------------- */
+  #pdfRoot{ display:none; width:794px; background:#fff; margin:0; padding:0; }
+  .pg{ width:794px; height:1123px; padding:0; position:relative; background:#fff; page-break-after:always; break-after:page; overflow:hidden; box-sizing:border-box; }
+  .pg-inner{padding:28px 36px 32px;}
+  .pg-head{display:flex; align-items:center; justify-content:space-between; padding:14px 36px; border-bottom:2px solid var(--black);}
+  .pg-head .brand{display:flex; align-items:center; gap:8px;}
+  .pg-head .brand .logo-box{padding:3px 8px 2px; border:1px solid var(--grey-200);}
+  .pg-head .brand .logo-box img, .pg-head .brand .logo-box svg{height:20px;}
+  .pg-head .doc{font-size:10.5px; color:var(--grey-600); font-weight:600;}
+  
+  .pg-title-bar{
+    background:var(--black); color:#fff; border-radius:8px; padding:8px 14px;
+    font-family:'Barlow Condensed'; font-size:16px; font-weight:700; letter-spacing:.03em;
+    text-transform:uppercase; margin:16px 0 12px;
+  }
+  .pg-title-bar.red{background:var(--red);}
+  .pg-card{background:var(--grey-50); border:1px solid var(--grey-100); border-radius:10px; padding:12px 14px; margin-bottom:12px;}
+  
+  /* PDF Cover Page */
+  .pg-cover{ background:var(--black); color:#fff; text-align:center; padding:0; }
+  .pg-cover .cband{padding:48px 40px 20px; display:flex; flex-direction:column; align-items:center;}
+  .pg-cover .logo-box{padding:10px 18px 8px; margin-bottom:18px; box-shadow:0 4px 20px rgba(0,0,0,0.4);}
+  .pg-cover .logo-box img, .pg-cover .logo-box svg{height:42px;}
+  .pg-cover h1{font-size:40px; margin:10px 0 0; font-weight:800; line-height:1.1;}
+  .pg-cover h1 i{color:var(--red); font-style:normal;}
+  .pg-cover .st{font-size:12px; color:#c9c9cc; margin-top:8px; letter-spacing:.08em; text-transform:uppercase;}
+  .pg-cover .veh-photo{width:100%; height:380px; object-fit:cover; margin-top:20px;}
+  .pg-cover .cfoot{background:#161616; padding:18px 40px; display:flex; justify-content:space-between; font-size:11.5px; margin-top:auto;}
+  
+  .pg-grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:8px;}
+  .pg-grid2{display:grid; grid-template-columns:repeat(2,1fr); gap:8px;}
+  .pg-grid5{display:grid; grid-template-columns:repeat(5,1fr); gap:6px;}
+  
+  .pg-kv{font-size:10.5px;}
+  .pg-kv .k{color:var(--grey-600); text-transform:uppercase; letter-spacing:.03em; font-weight:700; font-size:9px;}
+  .pg-kv .v{font-size:12px; font-weight:700; margin-top:2px; word-break:break-word;}
+  
+  .pg-pos-card{border:1px solid var(--grey-200); border-radius:8px; padding:8px; background:#fff; display:flex; flex-direction:column; justify-content:space-between;}
+  .pg-pos-card .ph{width:100%; height:75px; object-fit:cover; border-radius:6px; background:var(--grey-100); margin-top:6px;}
+  .pg-pill{display:inline-block; font-size:9.5px; font-weight:800; padding:2px 7px; border-radius:12px; text-transform:uppercase; text-align:center;}
+  .pg-pill.pass{background:var(--pass-bg); color:var(--pass);}
+  .pg-pill.fail{background:var(--fail-bg); color:var(--fail);}
+  .pg-pill.na{background:var(--na-bg); color:var(--na);}
+
+  /* Symmetrical Suspension Photo Cards in Print */
+  .susp-photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 8px; }
+  .susp-photo-card { border: 1px solid var(--grey-200); border-radius: 8px; padding: 6px; background: #fff; text-align: center; }
+  .susp-photo-card .lbl { font-size: 10px; font-weight: 700; color: var(--grey-800); margin-bottom: 4px; text-transform: uppercase; }
+  .susp-photo-card img { width: 100%; height: 110px; object-fit: cover; border-radius: 6px; display: block; }
+  .susp-photo-card .no-ph { width: 100%; height: 110px; background: var(--grey-100); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--grey-400); font-weight: 600; }
+
+  .pg-strip{display:grid; grid-template-columns:repeat(2,1fr); gap:6px;}
+  .pg-strip .si{display:flex; align-items:center; justify-content:space-between; border:1px solid var(--grey-100); border-radius:6px; padding:6px 8px; font-size:11px; font-weight:700;}
+  .pg-photos{display:grid; grid-template-columns:repeat(3,1fr); gap:8px;}
+  .pg-photos img{width:100%; height:100px; object-fit:cover; border-radius:6px; border:1px solid var(--grey-100);}
+  .pg-comment-line{color:var(--red); font-weight:700; font-size:11.5px; margin-bottom:4px;}
+  .pg-overview{background:var(--black); color:#fff; border-radius:10px; padding:14px 18px; display:flex; align-items:center; gap:20px; margin-top:10px;}
+  .pg-donut{width:80px; height:80px; border-radius:50%; flex:0 0 80px;}
+  .pageno{position:absolute; bottom:12px; right:36px; font-size:9.5px; color:var(--grey-600);}
+
+  /* Direct browser printing styling overrides */
+  @media print {
+    @page {
+      size: A4 portrait;
+      margin: 0;
+    }
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #fff !important;
+      width: 100% !important;
+    }
+    .rail, .topbar, .mobile-header, .mobile-drawer-overlay, .mobile-drawer, .modal-overlay, .btn {
+      display: none !important;
+    }
+    body.printing-pdf-root .app {
+      display: none !important;
+    }
+    body.printing-pdf-root #pdfRoot {
+      display: block !important;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    body.printing-pdf-root #pdfRoot .pg {
+      page-break-before: auto !important;
+      break-before: auto !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+    body.printing-pdf-root #pdfRoot .pg:first-child {
+      page-break-before: avoid !important;
+      break-before: avoid !important;
+    }
+    body.printing-pdf-root #pdfRoot .pg:last-child {
+      page-break-after: auto !important;
+      break-after: auto !important;
+    }
+  }
+
+  /* Modal Dialog Styles */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 99999;
+    display: none; align-items: center; justify-content: center; padding: 16px;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-box {
+    background: #fff; border-radius: 16px; padding: 26px; max-width: 440px; width: 100%;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center; animation: modalPop .2s ease-out;
+  }
+  @keyframes modalPop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal-box h3 { margin: 0 0 10px; font-size: 22px; font-weight: 700; color: var(--black); }
+  .modal-box p { font-size: 14px; color: var(--grey-600); margin: 0 0 22px; line-height: 1.45; font-weight: 500; }
+  .modal-actions { display: flex; gap: 10px; justify-content: center; }
+</style>
+</head>
+<body>
+
+<!-- Mobile Top Header Bar -->
+<div class="mobile-header">
+  <div class="logo-box" title="Fixanycars.com">
+    <img src="assets/logo.png" alt="Fixanycars Logo" onerror="this.onerror=null; this.src='assets/logo.svg';">
+  </div>
+  <button class="mobile-menu-btn" onclick="toggleMobileDrawer(true)">
+    <span>&#9776;</span> Sections
+  </button>
+</div>
+
+<!-- Mobile Nav Drawer Overlay -->
+<div class="mobile-drawer-overlay" id="mobileDrawerOverlay" onclick="toggleMobileDrawer(false)"></div>
+<div class="mobile-drawer" id="mobileDrawer">
+  <button class="mobile-drawer-close" onclick="toggleMobileDrawer(false)">&times;</button>
+  <div class="rail-progress" style="padding:0 20px 10px;">
+    <div class="bar"><i id="mobileProgressBar"></i></div>
+    <div class="lbl" id="mobileProgressLbl">0% checked</div>
+  </div>
+  <nav id="mobileRailNav"></nav>
+</div>
+
+<div class="app">
+  <!-- ============ LEFT NAV (Desktop) ============ -->
+  <aside class="rail">
+    <div class="rail-brand">
+      <div class="logo-box" title="Fixanycars.com">
+        <img src="assets/logo.png" alt="Fixanycars Logo" onerror="this.onerror=null; this.src='assets/logo.svg';">
+      </div>
+    </div>
+    <div class="rail-progress">
+      <div class="bar"><i id="progressBar"></i></div>
+      <div class="lbl" id="progressLbl">0% checked</div>
+    </div>
+    <nav id="railNav"></nav>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1>Pre-Purchase Inspection</h1>
+        <div class="sub">600-Point Comprehensive Vehicle Checklist &mdash; Fixanycars Inspector Console</div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-outline" onclick="resetForm()">Reset</button>
+        <button class="btn btn-outline" onclick="printReport()">&#128438; Print Report</button>
+        <button class="btn btn-red" id="pdfBtn" onclick="generatePDF()">&#8595; Download PDF</button>
+      </div>
+    </div>
+
+    <div class="content" id="formContent"></div>
+  </main>
+</div>
+
+<!-- Modal Container -->
+<div class="modal-overlay" id="customModal">
+  <div class="modal-box">
+    <h3 id="modalTitle">Notification</h3>
+    <p id="modalMsg">Message goes here...</p>
+    <div class="modal-actions" id="modalActions">
+      <button class="btn btn-red" onclick="closeModal()">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- hidden root the PDF is rendered into -->
+<div id="pdfRoot"></div>
+
+<script>
+const LOGO_HTML = `<div class="logo-box" title="Fixanycars.com"><img src="assets/logo.png" alt="Fixanycars Logo" onerror="this.onerror=null; this.src='assets/logo.svg';"></div>`;
+
+const SECTIONS = [
+  { id: 'cover', label: 'Cover & Meta' },
+  { id: 'tyres', label: 'Tyres' },
+  { id: 'rims', label: 'Rims' },
+  { id: 'brakes', label: 'Brakes' },
+  { id: 'suspension', label: 'Suspension' },
+  { id: 'intext', label: 'Interior & Exterior' },
+  { id: 'electrical', label: 'Electrical System' },
+  { id: 'body', label: 'Body Structure & Paint' },
+  { id: 'engine', label: 'Engine Bay' },
+  { id: 'transmission', label: 'Transmission & Drivetrain' },
+  { id: 'chassis', label: 'Chassis & Subframe' },
+  { id: 'photos', label: 'General Photos' },
+  { id: 'comments', label: 'Inspector Comments' },
+  { id: 'disclaimer', label: 'Disclaimer' }
+];
+
+const POSITIONS = [
+  { k: 'FL', n: 'Front Left (FL)' },
+  { k: 'FR', n: 'Front Right (FR)' },
+  { k: 'RL', n: 'Rear Left (RL)' },
+  { k: 'RR', n: 'Rear Right (RR)' },
+  { k: 'SP', n: 'Spare Wheel (SP)' }
+];
+
+const ENGINE_ITEMS = [
+  'Engine Oil Level & Quality', 'Coolant Level & Condition', 'Radiator & Hoses',
+  'Drive Belts & Tensioners', 'Air Filter Element', 'Battery Condition & Voltage',
+  'Alternator Charging Output', 'Engine Mounts', 'Valve Cover Gasket (Leaks)',
+  'Oil Pan Gasket (Leaks)', 'Turbocharger / Supercharger', 'Exhaust Manifold & Sensors',
+  'Fuel Injection System', 'Ignition Coils & Spark Plugs', 'Engine Noise / Knocking',
+  'Smoke from Exhaust (Idle & Rev)', 'Radiator Fan Operation', 'Thermostat Function'
+];
+
+const TRANSMISSION_ITEMS = [
+  'Transmission Fluid Level & Color', 'Gear Engagement (P/R/N/D)', 'Shift Smoothness & Timing',
+  'Clutch Operation (Manual)', 'Torque Converter Performance', 'Transfer Case (4WD/AWD)',
+  'Front Differential Fluid & Leaks', 'Rear Differential Fluid & Leaks', 'Drive Shaft & Universal Joints',
+  'CV Axle Boots & Joints', 'Transmission Mounts', 'Traction Control / ABS Module'
+];
+
+const CHASSIS_ITEMS = [
+  'Underbody Shielding / Covers', 'Main Frame Rails', 'Front Subframe Condition',
+  'Rear Subframe Condition', 'Floor Pan / Rust Inspection', 'Jack Points & Rocker Panels',
+  'Fuel Tank & Fuel Lines', 'Brake Lines Underbody', 'Exhaust System Piping & Catalytic Converter',
+  'Exhaust Hangers & Heat Shields', 'Tow Hitch / Rear Bumper Structure', 'Crash Structures & Impact Bars'
+];
+
+const ELECTRICAL_ITEMS = [
+  'Headlights (Low & High Beam)', 'Daytime Running Lights (DRL)', 'Front & Rear Turn Signals',
+  'Brake Lights & High-Mount Stop Light', 'Reverse Lights', 'Fog Lights (Front & Rear)',
+  'Hazard Lights', 'License Plate Lights', 'Instrument Cluster & Gauges',
+  'Infotainment / Touchscreen System', 'Audio System & Speakers', 'Navigation / GPS System',
+  'Backup Camera & 360 Sensors', 'Parking Sensors (Front & Rear)', 'Climate Control A/C (Cooling)',
+  'Heater & Defroster', 'Blower Motor Fan Speed', 'Power Windows (All 4)',
+  'Power Side Mirrors & Folding', 'Central Locking & Keyless Entry', 'Sunroof / Panoramic Roof',
+  'Interior Ambient Lighting', 'Horn Operation', 'Wipers & Washer Fluid Spray',
+  'Power Seats Adjustments', 'Seat Heating & Ventilation', 'Steering Wheel Controls',
+  '12V Power Outlets & USB Ports', 'Wireless Phone Charger', 'OBD-II Fault Codes (DTCs)'
+];
+
+const INTEXT_ITEMS = [
+  'Dashboard Condition & Cracks', 'Center Console & Storage', 'Front Seats Leather / Fabric',
+  'Rear Seats Leather / Fabric', 'Headliner & Pillar Trim', 'Carpet & Floor Mats',
+  'Door Panels & Weatherstripping', 'Steering Wheel Condition', 'Gear Selector Knob',
+  'Seatbelts (All Positions)', 'Child Seat Anchors (ISOFIX)', 'Front Windshield (Chips/Cracks)',
+  'Rear Windshield', 'Side Glass Windows', 'Side Mirrors Glass',
+  'Front Bumper Alignment', 'Rear Bumper Alignment', 'Grille & Emblems',
+  'Door Handles & Latches', 'Trunk / Tailgate Hinge & Struts', 'Bonnet / Hood Struts & Latch'
+];
+
+const BODY_PANELS = [
+  'Front Bumper', 'Hood / Bonnet', 'Front Left Fender', 'Front Right Fender',
+  'Front Left Door', 'Front Right Door', 'Rear Left Door', 'Rear Right Door',
+  'Roof', 'Rear Left Quarter Panel', 'Rear Right Quarter Panel', 'Trunk / Boot Lid', 'Rear Bumper'
+];
+
+const state = {
+  meta: {
+    date: new Date().toISOString().slice(0,10),
+    time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+    type: 'Comprehensive Pre-Purchase',
+    vin: '', inspector: 'Senior Inspector', inspectorId: 'INSP-9042',
+    customer: '', location: 'Dubai Main Hub', mileage: '',
+    make: '', model: '', year: '2023', specs: 'GCC Specs',
+    transmission: 'Automatic', engine: '2.0L Turbo', odometer: 'Digital',
+    spare: 'Yes (Full Size)', keys: '2 Keys', vtype: 'Sedan',
+    colour: 'White Metallic', fuel: 'Petrol', coverphoto: ''
+  },
+  tyres: POSITIONS.reduce((acc,p)=> (acc[p.k]={status:'pending',year:'',tread:'',photo:''},acc), {}),
+  rims: POSITIONS.reduce((acc,p)=> (acc[p.k]={status:'pending',photo:''},acc), {}),
+  brakes: {
+    FR:{type:'Disc',pads:'pending',disc:'pending',photo:''},
+    FL:{type:'Disc',pads:'pending',disc:'pending',photo:''},
+    RR:{type:'Disc',pads:'pending',disc:'pending',photo:''},
+    RL:{type:'Disc',pads:'pending',disc:'pending',photo:''}
+  },
+  suspension: {
+    front: {status:'pending', photoFR:'', photoFL:''},
+    rear: {status:'pending', photoRR:'', photoRL:''}
+  },
+  intext: INTEXT_ITEMS.reduce((acc,item)=>(acc[item]={status:'pending',note:'',photo:''},acc), {}),
+  electrical: ELECTRICAL_ITEMS.reduce((acc,item)=>(acc[item]={status:'pending'},acc), {}),
+  body: BODY_PANELS.reduce((acc,panel)=>(acc[panel]={paint:'Original',damage:[],photo:''},acc), {}),
+  engine: ENGINE_ITEMS.reduce((acc,item)=>(acc[item]={status:'pending'},acc), {}),
+  transmission: TRANSMISSION_ITEMS.reduce((acc,item)=>(acc[item]={status:'pending'},acc), {}),
+  chassis: CHASSIS_ITEMS.reduce((acc,item)=>(acc[item]={status:'pending'},acc), {}),
+  photos: { exterior:[], interior:[], engine:[] },
+  comment: ''
+};
+
+function showAlert(title, msg) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalMsg').textContent = msg;
+  document.getElementById('modalActions').innerHTML = `<button class="btn btn-red" onclick="closeModal()">OK</button>`;
+  document.getElementById('customModal').classList.add('active');
+}
+
+function showConfirm(title, msg, onConfirm) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalMsg').textContent = msg;
+  document.getElementById('modalActions').innerHTML = `
+    <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-red" id="confirmOkBtn">Confirm</button>
+  `;
+  document.getElementById('confirmOkBtn').onclick = () => {
+    closeModal();
+    onConfirm();
+  };
+  document.getElementById('customModal').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('customModal').classList.remove('active');
+}
+
+function updateMeta(field, val) {
+  state.meta[field] = val;
+}
+
+function handlePhoto(input, id) {
+  if (input.files && input.files[0]) {
+    fileToDataURL(input.files[0], (dataUrl) => {
+      setPhotoState(id, dataUrl);
+      const dropEl = document.getElementById('drop-' + id);
+      if (dropEl) {
+        dropEl.innerHTML = `<img src="${dataUrl}"><span class="x" onclick="event.preventDefault();event.stopPropagation();clearPhoto('${id}')">&times;</span><input type="file" accept="image/*" onchange="handlePhoto(this,'${id}')">`;
+      }
+    });
+  }
+}
+
+function clearPhoto(id) {
+  setPhotoState(id, '');
+  const dropEl = document.getElementById('drop-' + id);
+  if (dropEl) {
+    dropEl.innerHTML = `&#128247; Add photo<input type="file" accept="image/*" onchange="handlePhoto(this,'${id}')">`;
+  }
+}
+
+function setPhotoState(id, url) {
+  const parts = id.split('-');
+  if (parts[0] === 'cover') state.meta.coverphoto = url;
+  else if (parts[0] === 'tyre') state.tyres[parts[1]].photo = url;
+  else if (parts[0] === 'rim') state.rims[parts[1]].photo = url;
+  else if (parts[0] === 'brake') state.brakes[parts[1]].photo = url;
+  else if (parts[0] === 'susp') {
+    if (parts[1] === 'frontFR') state.suspension.front.photoFR = url;
+    if (parts[1] === 'frontFL') state.suspension.front.photoFL = url;
+    if (parts[1] === 'rearRR') state.suspension.rear.photoRR = url;
+    if (parts[1] === 'rearRL') state.suspension.rear.photoRL = url;
+  }
+  else if (parts[0] === 'intext') state.intext[decodeURIComponent(parts[1])].photo = url;
+  else if (parts[0] === 'body') state.body[decodeURIComponent(parts[1])].photo = url;
+}
+
+function setStatus(path, status) {
+  const keys = path.split('.');
+  let obj = state;
+  for (let i = 0; i < keys.length - 1; i++) {
+    obj = obj[keys[i]];
+  }
+  obj[keys[keys.length - 1]] = status;
+  renderProgress();
+  
+  const btnGroup = document.querySelectorAll(`[data-path="${path}"]`);
+  btnGroup.forEach(btn => {
+    btn.classList.remove('active', 'pass', 'fail', 'na');
+    if (btn.dataset.val === status) {
+      btn.classList.add('active', status);
+    }
+  });
+}
+
+function renderToggle(path, currentVal) {
+  return `<div class="status-toggle">
+    <button data-path="${path}" data-val="pass" class="${currentVal==='pass'?'active pass':''}" onclick="setStatus('${path}','pass')">Pass</button>
+    <button data-path="${path}" data-val="fail" class="${currentVal==='fail'?'active fail':''}" onclick="setStatus('${path}','fail')">Fail</button>
+    <button data-path="${path}" data-val="na" class="${currentVal==='na'?'active na':''}" onclick="setStatus('${path}','na')">N/A</button>
+  </div>`;
+}
+
+function toggleChip(panel, type) {
+  const list = state.body[panel].damage;
+  const idx = list.indexOf(type);
+  if (idx > -1) list.splice(idx, 1);
+  else list.push(type);
+  
+  const chipEl = document.querySelector(`[data-panel="${panel}"][data-chip="${type}"]`);
+  if (chipEl) chipEl.classList.toggle('active', list.includes(type));
+}
+
+function scrollToSec(id) {
+  const el = document.getElementById('sec-' + id);
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+}
+
+function computeIssues() {
+  const issues = [];
+  POSITIONS.forEach(p => {
+    if (state.tyres[p.k].status === 'fail') issues.push(`Tyres: ${p.n} failed inspection`);
+    if (state.rims[p.k].status === 'fail') issues.push(`Rims: ${p.n} damaged/failed`);
+  });
+  ['FR','FL','RR','RL'].forEach(k => {
+    if (state.brakes[k].pads === 'fail') issues.push(`Brakes: ${k} pads worn out`);
+    if (state.brakes[k].disc === 'fail') issues.push(`Brakes: ${k} disc damaged`);
+  });
+  if (state.suspension.front.status === 'fail') issues.push(`Suspension: Front suspension defect detected`);
+  if (state.suspension.rear.status === 'fail') issues.push(`Suspension: Rear suspension defect detected`);
+  
+  Object.entries(state.intext).forEach(([k,v]) => { if(v.status === 'fail') issues.push(`Interior/Exterior: ${k}`); });
+  Object.entries(state.electrical).forEach(([k,v]) => { if(v.status === 'fail') issues.push(`Electrical: ${k}`); });
+  Object.entries(state.engine).forEach(([k,v]) => { if(v.status === 'fail') issues.push(`Engine: ${k}`); });
+  Object.entries(state.transmission).forEach(([k,v]) => { if(v.status === 'fail') issues.push(`Transmission: ${k}`); });
+  Object.entries(state.chassis).forEach(([k,v]) => { if(v.status === 'fail') issues.push(`Chassis: ${k}`); });
+  Object.entries(state.body).forEach(([k,v]) => {
+    if(v.damage.length > 0) issues.push(`Body Panel ${k}: ${v.damage.join(', ')}`);
+  });
+  return issues;
+}
+
+function renderCover() {
+  const m = state.meta;
+  return `<section class="card" id="sec-cover">
+    <div class="head"><h2>1. Vehicle & Meta Information <span class="tag">Cover</span></h2></div>
+    <div class="desc">Enter general inspection details, client info, and main vehicle specs.</div>
+    <div class="grid" style="margin-bottom:14px;">
+      <div class="field"><label>Date</label><input type="date" value="${m.date}" onchange="updateMeta('date',this.value)"></div>
+      <div class="field"><label>Time</label><input type="text" value="${m.time}" onchange="updateMeta('time',this.value)"></div>
+      <div class="field"><label>Inspection Type</label><input type="text" value="${m.type}" onchange="updateMeta('type',this.value)"></div>
+      <div class="field"><label>VIN Number</label><input type="text" placeholder="17-digit VIN" value="${m.vin}" onchange="updateMeta('vin',this.value)"></div>
+      <div class="field"><label>Inspector Name</label><input type="text" value="${m.inspector}" onchange="updateMeta('inspector',this.value)"></div>
+      <div class="field"><label>Inspector ID</label><input type="text" value="${m.inspectorId}" onchange="updateMeta('inspectorId',this.value)"></div>
+      <div class="field"><label>Customer Name</label><input type="text" placeholder="Client Full Name" value="${m.customer}" onchange="updateMeta('customer',this.value)"></div>
+      <div class="field"><label>Location</label><input type="text" value="${m.location}" onchange="updateMeta('location',this.value)"></div>
+      <div class="field"><label>Odometer (KM)</label><input type="text" placeholder="e.g. 45,200" value="${m.mileage}" onchange="updateMeta('mileage',this.value)"></div>
+    </div>
+    <div class="grid">
+      <div class="field"><label>Make</label><input type="text" placeholder="e.g. Porsche" value="${m.make}" onchange="updateMeta('make',this.value)"></div>
+      <div class="field"><label>Model</label><input type="text" placeholder="e.g. Cayenne" value="${m.model}" onchange="updateMeta('model',this.value)"></div>
+      <div class="field"><label>Model Year</label><input type="text" value="${m.year}" onchange="updateMeta('year',this.value)"></div>
+      <div class="field"><label>Regional Specs</label><input type="text" value="${m.specs}" onchange="updateMeta('specs',this.value)"></div>
+      <div class="field"><label>Transmission</label><input type="text" value="${m.transmission}" onchange="updateMeta('transmission',this.value)"></div>
+      <div class="field"><label>Engine</label><input type="text" value="${m.engine}" onchange="updateMeta('engine',this.value)"></div>
+      <div class="field"><label>Vehicle Main Photo</label>${photoDrop('cover', m.coverphoto)}</div>
+    </div>
+  </section>`;
+}
+
+/* Fixed 5-Column Clean Layout for Tyres & Rims Form Section */
+function renderTyresOrRims(type) {
+  const isTyre = type === 'tyres';
+  const label = isTyre ? 'Tyres' : 'Rims';
+  const secId = isTyre ? 'tyres' : 'rims';
+  const secNum = isTyre ? 2 : 3;
+
+  const cards = POSITIONS.map(p => {
+    const rec = state[type][p.k];
+    const tyreFields = isTyre ? `
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:4px;">
+        <input type="text" style="font-size:11px; padding:6px 4px; min-height:32px; border-radius:6px;" placeholder="Mfg Year" value="${rec.year}" onchange="state.tyres.${p.k}.year=this.value">
+        <input type="text" style="font-size:11px; padding:6px 4px; min-height:32px; border-radius:6px;" placeholder="Tread (mm)" value="${rec.tread}" onchange="state.tyres.${p.k}.tread=this.value">
+      </div>
+    ` : '';
+    return `<div class="item">
+      <div class="row1">
+        <div class="name">${p.n}</div>
+        ${renderToggle(`${type}.${p.k}.status`, rec.status)}
+      </div>
+      ${tyreFields}
+      ${photoDrop(`${type==='tyres'?'tyre':'rim'}-${p.k}`, rec.photo)}
+    </div>`;
+  }).join('');
+
+  return `<section class="card" id="sec-${secId}">
+    <div class="head"><h2>${secNum}. ${label} Inspection <span class="tag">5 Positions</span></h2></div>
+    <div class="position-grid">${cards}</div>
+  </section>`;
+}
+
+function renderBrakes() {
+  const cards = ['FR','FL','RR','RL'].map(k => {
+    const nameMap = {FR:'Front Right (FR)', FL:'Front Left (FL)', RR:'Rear Right (RR)', RL:'Rear Left (RL)'};
+    const b = state.brakes[k];
+    return `<div class="item">
+      <div class="row1">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div class="name">${nameMap[k]}</div>
+          <span style="font-size:11px; font-weight:700; color:var(--grey-600);">${b.type}</span>
+        </div>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+        <span style="font-size:11px; font-weight:700; flex:0 0 38px;">PADS</span>
+        <div style="flex:1;">${renderToggle(`brakes.${k}.pads`, b.pads)}</div>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+        <span style="font-size:11px; font-weight:700; flex:0 0 38px;">DISC</span>
+        <div style="flex:1;">${renderToggle(`brakes.${k}.disc`, b.disc)}</div>
+      </div>
+      ${photoDrop(`brake-${k}`, b.photo)}
+    </div>`;
+  }).join('');
+
+  return `<section class="card" id="sec-brakes">
+    <div class="head"><h2>4. Brakes System <span class="tag">4 Wheels</span></h2></div>
+    <div class="grid cols2">${cards}</div>
+  </section>`;
+}
+
+function renderSuspension() {
+  const F = state.suspension.front, R = state.suspension.rear;
+  return `<section class="card" id="sec-suspension">
+    <div class="head"><h2>5. Suspension System <span class="tag">Front & Rear</span></h2></div>
+    <div class="grid cols2">
+      <div class="item">
+        <div class="row1"><div class="name">Front Suspension Assembly</div>${renderToggle('suspension.front.status', F.status)}</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div>
+            <div style="font-size:10px; font-weight:700; color:var(--grey-600); margin-bottom:4px; text-transform:uppercase;">Front Right (FR)</div>
+            ${photoDrop('susp-frontFR', F.photoFR)}
+          </div>
+          <div>
+            <div style="font-size:10px; font-weight:700; color:var(--grey-600); margin-bottom:4px; text-transform:uppercase;">Front Left (FL)</div>
+            ${photoDrop('susp-frontFL', F.photoFL)}
+          </div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="row1"><div class="name">Rear Suspension Assembly</div>${renderToggle('suspension.rear.status', R.status)}</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div>
+            <div style="font-size:10px; font-weight:700; color:var(--grey-600); margin-bottom:4px; text-transform:uppercase;">Rear Right (RR)</div>
+            ${photoDrop('susp-rearRR', R.photoRR)}
+          </div>
+          <div>
+            <div style="font-size:10px; font-weight:700; color:var(--grey-600); margin-bottom:4px; text-transform:uppercase;">Rear Left (RL)</div>
+            ${photoDrop('susp-rearRL', R.photoRL)}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function renderIntext() {
+  const items = INTEXT_ITEMS.map((item, idx) => {
+    const rec = state.intext[item];
+    const enc = encodeURIComponent(item);
+    return `<div class="item">
+      <div class="row1"><div class="name">${idx+1}. ${item}</div>${renderToggle(`intext.${item}.status`, rec.status)}</div>
+      <div class="note"><input type="text" placeholder="Add observation note..." value="${rec.note}" onchange="state.intext['${item}'].note=this.value" style="font-size:12px; min-height:36px; padding:6px 10px;"></div>
+      <div style="margin-top:2px;">${photoDrop(`intext-${enc}`, rec.photo)}</div>
+    </div>`;
+  }).join('');
+
+  return `<section class="card" id="sec-intext">
+    <div class="head"><h2>6. Interior & Exterior Checklist <span class="tag">${INTEXT_ITEMS.length} Points</span></h2></div>
+    <div class="grid cols2">${items}</div>
+  </section>`;
+}
+
+function renderElectrical() {
+  const items = ELECTRICAL_ITEMS.map(item => {
+    const rec = state.electrical[item];
+    return `<div class="strip-item">
+      <div class="name">${item}</div>${renderToggle(`electrical.${item}.status`, rec.status)}
+    </div>`;
+  }).join('');
+
+  return `<section class="card" id="sec-electrical">
+    <div class="head"><h2>7. Electrical System <span class="tag">${ELECTRICAL_ITEMS.length} Checks</span></h2></div>
+    <div class="checklist-strip">${items}</div>
+  </section>`;
+}
+
+function renderBody() {
+  const panels = BODY_PANELS.map(panel => {
+    const rec = state.body[panel];
+    const enc = encodeURIComponent(panel);
+    const chips = ['Dent', 'Scratch', 'Repainted', 'Rust', 'Crack', 'Misaligned'].map(type => {
+      const act = rec.damage.includes(type) ? 'active' : '';
+      return `<span class="chip ${act}" data-panel="${panel}" data-chip="${type}" onclick="toggleChip('${panel}','${type}')">${type}</span>`;
+    }).join('');
+
+    return `<div class="item">
+      <div class="row1">
+        <div class="name">${panel}</div>
+        <select style="width:100%; font-size:12px; min-height:34px; padding:4px;" onchange="state.body['${panel}'].paint=this.value">
+          <option ${rec.paint==='Original'?'selected':''}>Original Paint</option>
+          <option ${rec.paint==='Repainted'?'selected':''}>Repainted Panel</option>
+          <option ${rec.paint==='Replaced'?'selected':''}>Replaced Panel</option>
+        </select>
+      </div>
+      <div class="damage-chips">${chips}</div>
+      <div style="margin-top:6px;">${photoDrop(`body-${enc}`, rec.photo)}</div>
+    </div>`;
+  }).join('');
+
+  return `<section class="card" id="sec-body">
+    <div class="head"><h2>8. Body Structure & Paint Inspection <span class="tag">13 Panels</span></h2></div>
+    <div class="panel-grid">${panels}</div>
+  </section>`;
+}
+
+function renderSimpleChecklist(id, title, tag, items, store) {
+  const rows = items.map(item => {
+    const rec = store[item];
+    return `<div class="strip-item">
+      <div class="name">${item}</div>${renderToggle(`${id}.${item}.status`, rec.status)}
+    </div>`;
+  }).join('');
+
+  return `<section class="card" id="sec-${id}">
+    <div class="head"><h2>${title} <span class="tag">${tag}</span></h2></div>
+    <div class="checklist-strip">${rows}</div>
+  </section>`;
+}
+
+function renderChassis() {
+  return renderSimpleChecklist('chassis', '11. Chassis & Subframe', CHASSIS_ITEMS.length+' Checks', CHASSIS_ITEMS, state.chassis);
+}
+
+function renderPhotos() {
+  return `<section class="card" id="sec-photos">
+    <div class="head"><h2>12. General Vehicle Photos <span class="tag">Overview</span></h2></div>
+    <div class="desc">Add extra high-resolution overview photos of exterior, interior and engine bay.</div>
+    <div class="grid cols2">
+      <div class="field"><label>Exterior Photos</label><input type="file" multiple accept="image/*" onchange="addGeneralPhotos(this, 'exterior')"></div>
+      <div class="field"><label>Interior Photos</label><input type="file" multiple accept="image/*" onchange="addGeneralPhotos(this, 'interior')"></div>
+    </div>
+  </section>`;
+}
+
+function addGeneralPhotos(input, cat) {
+  if(input.files) {
+    Array.from(input.files).forEach(file => {
+      fileToDataURL(file, url => state.photos[cat].push(url));
+    });
+  }
+}
+
+function renderComments() {
+  return `<section class="card" id="sec-comments">
+    <div class="head"><h2>13. Inspector Comments & Summary <span class="tag">Final Remarks</span></h2></div>
+    <div class="field">
+      <label>Overall Evaluation</label>
+      <textarea placeholder="Write overall vehicle condition evaluation, road test notes..." onchange="state.comment=this.value">${state.comment}</textarea>
+    </div>
+  </section>`;
+}
+
+function renderDisclaimer() {
+  return `<section class="card" id="sec-disclaimer">
+    <div class="head"><h2>14. Terms & Disclaimer <span class="tag">Legal Policy</span></h2></div>
+    <div class="desc disc" style="line-height:1.6; font-size:12px; color:var(--grey-600);">
+      This Pre-Purchase Inspection report provides a visual and non-dismantling technical assessment of the specified vehicle at the exact time and date of inspection. Fixanycars inspectors examine observable components and run diagnostics; however, hidden internal mechanical, electronic, or frame defects not discernible without component teardown are beyond scope. Fixanycars assumes no warranty or guarantee regarding future vehicle performance, durability, or resale value.
+    </div>
+  </section>`;
+}
+
+/* Mobile Drawer Controls */
+function toggleMobileDrawer(open) {
+  const overlay = document.getElementById('mobileDrawerOverlay');
+  const drawer = document.getElementById('mobileDrawer');
+  if (open) {
+    overlay.classList.add('active');
+    drawer.classList.add('active');
+  } else {
+    overlay.classList.remove('active');
+    drawer.classList.remove('active');
+  }
+}
+
+/* Optimized image conversion with client-side canvas compression */
+function fileToDataURL(file, cb) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+      const MAX_DIM = 1200;
+      if (width > MAX_DIM || height > MAX_DIM) {
+        if (width > height) {
+          height = Math.round((height * MAX_DIM) / width);
+          width = MAX_DIM;
+        } else {
+          width = Math.round((width * MAX_DIM) / height);
+          height = MAX_DIM;
+        }
+      }
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      cb(canvas.toDataURL('image/jpeg', 0.75));
+    };
+    img.onerror = () => cb(e.target.result);
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function photoDrop(id, current){
+  return `<div class="photo-drop" id="drop-${id}">
+    ${current ? `<img src="${current}"><span class="x" onclick="event.preventDefault();event.stopPropagation();clearPhoto('${id}')">&times;</span>` : '&#128247; Add photo'}
+    <input type="file" accept="image/*" onchange="handlePhoto(this,'${id}')">
+  </div>`;
+}
+
+function renderNav(){
+  const navHtml = SECTIONS.map((s,i)=>`<a href="#sec-${s.id}" onclick="toggleMobileDrawer(false);scrollToSec('${s.id}');return false;" id="nav-${s.id}"><span class="n">${i+1}</span>${s.label}</a>`).join('');
+  document.getElementById('railNav').innerHTML = navHtml;
+  document.getElementById('mobileRailNav').innerHTML = navHtml;
+}
+
+function renderProgress(){
+  let total=0, done=0, pass=0, fail=0;
+  function tally(rec, statField){ total++; const v=rec[statField]; if(v && v!=='pending'){done++; if(v==='pass'||v==='checked')pass++; if(v==='fail'||v==='damaged')fail++;} }
+  POSITIONS.forEach(p=>{ tally(state.tyres[p.k],'status'); tally(state.rims[p.k],'status'); });
+  ['FR','FL','RR','RL'].forEach(k=>{ tally(state.brakes[k],'pads'); tally(state.brakes[k],'disc'); });
+  tally(state.suspension.front,'status'); tally(state.suspension.rear,'status');
+  Object.values(state.intext).forEach(r=>tally(r,'status'));
+  Object.values(state.electrical).forEach(r=>tally(r,'status'));
+  Object.values(state.engine).forEach(r=>tally(r,'status'));
+  Object.values(state.transmission).forEach(r=>tally(r,'status'));
+  Object.values(state.chassis).forEach(r=>tally(r,'status'));
+
+  const pct = total? Math.round(done/total*100) : 0;
+  const barText = pct+'% checked ('+done+'/'+total+')';
+  
+  document.getElementById('progressBar').style.width = pct+'%';
+  document.getElementById('progressLbl').textContent = barText;
+  
+  if (document.getElementById('mobileProgressBar')) {
+    document.getElementById('mobileProgressBar').style.width = pct+'%';
+    document.getElementById('mobileProgressLbl').textContent = barText;
+  }
+
+  SECTIONS.forEach(s=>{
+    const el = document.getElementById('nav-'+s.id);
+    if(el) el.classList.toggle('done', false);
+  });
+  return {total, done, pass, fail};
+}
+
+/* =========================================================================
+   MASTER RENDER
+   ========================================================================= */
+function renderAll(){
+  const c = document.getElementById('formContent');
+  c.innerHTML =
+    renderCover() +
+    renderTyresOrRims('tyres') +
+    renderTyresOrRims('rims') +
+    renderBrakes() +
+    renderSuspension() +
+    renderIntext() +
+    renderElectrical() +
+    renderBody() +
+    renderSimpleChecklist('engine','9. Engine Bay',ENGINE_ITEMS.length+' Checks',ENGINE_ITEMS, state.engine) +
+    renderSimpleChecklist('transmission','10. Transmission & Drivetrain',TRANSMISSION_ITEMS.length+' Checks',TRANSMISSION_ITEMS, state.transmission) +
+    renderChassis() +
+    renderPhotos() +
+    renderComments() +
+    renderDisclaimer();
+  renderProgress();
+}
+
+function resetForm(){
+  showConfirm('Reset Inspection Form', 'Are you sure you want to reset the entire inspection form? All entered data will be cleared.', ()=>{
+    location.reload();
+  });
+}
+
+renderNav();
+renderAll();
+
+/* =========================================================================
+   PDF GENERATION WITH COMPACT SPACING & ALIGNED SUSPENSION
+   ========================================================================= */
+function pill(status){
+  const map = {pass:'PASS',fail:'FAIL',na:'N/A',checked:'CHECKED',repaired:'REPAIRED',damaged:'DAMAGED',pending:'PENDING'};
+  const cls = status==='pending' ? 'na' : status;
+  return `<span class="pg-pill ${cls}">${map[status]||status}</span>`;
+}
+function ph(url, alt){ return url ? `<img class="ph" src="${url}" alt="${alt||''}">` : `<div class="ph" style="display:flex;align-items:center;justify-content:center;color:#a8a8ac;font-size:10px;">No photo</div>`; }
+
+function buildPdfHTML(){
+  const m = state.meta;
+  const stats = renderProgress();
+  const passPct = stats.done ? Math.round(stats.pass/stats.done*100) : 0;
+  const failPct = 100-passPct;
+  const issues = computeIssues();
+  const today = new Date().toLocaleDateString('en-GB');
+
+  const headBar = (label, color)=> `<div class="pg-title-bar ${color==='red'?'red':''}">${label}</div>`;
+  const pageHead = ()=> `<div class="pg-head">
+      <div class="brand">${LOGO_HTML}</div>
+      <div class="doc">Pre-Purchase Inspection Report &middot; VIN ${m.vin||'-'}</div>
+    </div>`;
+
+  /* Page 1: Cover Page (Without leading whitespace to eliminate blank page 1) */
+  const cover = `<div class="pg pg-cover"><div class="cband">${LOGO_HTML}<h1>PRE-PURCHASE<br><i>INSPECTION REPORT</i></h1><div class="st">Precision Vehicle Assessment &mdash; fixanycars.com</div></div>${ph(m.coverphoto,'vehicle')}<div class="cfoot" style="margin-top:${m.coverphoto?0:220}px;"><div><b>Contact</b><br>+971 50 985 9109</div><div style="text-align:right;"><b>Mail</b><br>service@fixanycars.com</div></div></div>`;
+
+  /* Page 2: Inspection Details & Summary */
+  const kv = (k,v)=> `<div class="pg-kv"><div class="k">${k}</div><div class="v">${v||'-'}</div></div>`;
+  const detailsPage = `<div class="pg"><div class="pg-inner">
+    ${pageHead()}
+    ${headBar('Inspection Details')}
+    <div class="pg-card"><div class="pg-grid3">
+      ${kv('Date', m.date)}${kv('Time', m.time)}${kv('Inspection Type', m.type)}
+      ${kv('VIN Number', m.vin)}${kv('Inspector', m.inspector)}${kv('Inspector ID', m.inspectorId)}
+      ${kv('Customer', m.customer)}${kv('Location', m.location)}${kv('Mileage', m.mileage?m.mileage+' km':'')}
+    </div></div>
+
+    ${headBar('Vehicle Summary')}
+    <div class="pg-card"><div class="pg-grid3">
+      ${kv('Make', m.make)}${kv('Model', m.model)}${kv('Model Year', m.year)}
+      ${kv('Regional Specs', m.specs)}${kv('Transmission', m.transmission)}${kv('Engine', m.engine)}
+      ${kv('Odometer', m.odometer)}${kv('Spare Tyre', m.spare)}${kv('Number of Keys', m.keys)}
+      ${kv('Vehicle Type', m.vtype)}${kv('Exterior Colour', m.colour)}${kv('Fuel Type', m.fuel)}
+    </div></div>
+
+    <div class="pg-overview">
+      <div class="pg-donut" style="background:conic-gradient(#e2001a 0% ${failPct}%, #ffffff ${failPct}% 100%);"></div>
+      <div style="display:flex; gap:30px;">
+        <div><b style="font-size:24px;font-weight:800;">${passPct}%</b><div style="font-size:10px;color:#c9c9cc;text-transform:uppercase;">Pass</div></div>
+        <div><b style="font-size:24px;font-weight:800;">${failPct}%</b><div style="font-size:10px;color:#c9c9cc;text-transform:uppercase;">Fail / Attention</div></div>
+        <div><b style="font-size:24px;font-weight:800;">${stats.done}/${stats.total}</b><div style="font-size:10px;color:#c9c9cc;text-transform:uppercase;">Points Checked</div></div>
+      </div>
+    </div>
+  </div><div class="pageno">Fixanycars &middot; ${today}</div></div>`;
+
+  /* Page 3: Wheels & Brakes (Tyres, Rims & Brakes Combined to reduce whitespace) */
+  const tyreCards = POSITIONS.map(p=>{
+    const rec = state.tyres[p.k];
+    return `<div class="pg-pos-card">
+      <div style="display:flex; justify-content:space-between; align-items:center;"><b style="font-size:11px;">${p.n}</b>${pill(rec.status)}</div>
+      <div style="font-size:9.5px;color:#6c6c72;margin-top:2px;">Year: ${rec.year||'-'} | Tread: ${rec.tread||'-'}mm</div>
+      ${ph(rec.photo)}
+    </div>`;
+  }).join('');
+
+  const rimCards = POSITIONS.map(p=>{
+    const rec = state.rims[p.k];
+    return `<div class="pg-pos-card">
+      <div style="display:flex; justify-content:space-between; align-items:center;"><b style="font-size:11px;">${p.n}</b>${pill(rec.status)}</div>
+      ${ph(rec.photo)}
+    </div>`;
+  }).join('');
+
+  const brakeCards = ['FR','FL','RR','RL'].map(k=>{
+    const nm = {FR:'Front Right (FR)', FL:'Front Left (FL)', RR:'Rear Right (RR)', RL:'Rear Left (RL)'}[k];
+    const b = state.brakes[k];
+    return `<div class="pg-pos-card">
+      <div style="display:flex; justify-content:space-between;"><b style="font-size:11px;">${nm}</b><span style="font-size:9.5px;color:#6c6c72;">${b.type}</span></div>
+      <div style="display:flex; gap:6px; margin-top:4px;">PADS ${pill(b.pads)} DISC ${pill(b.disc)}</div>
+      ${ph(b.photo)}
+    </div>`;
+  }).join('');
+
+  const wheelsBrakesPage = `<div class="pg"><div class="pg-inner">
+    ${pageHead()}
+    ${headBar('1. Tyres Inspection')}
+    <div class="pg-grid5" style="margin-bottom:12px;">${tyreCards}</div>
+    ${headBar('2. Rims Inspection')}
+    <div class="pg-grid5" style="margin-bottom:12px;">${rimCards}</div>
+    ${headBar('3. Brake System')}
+    <div class="pg-grid2">${brakeCards}</div>
+  </div><div class="pageno">Fixanycars &middot; ${today}</div></div>`;
+
+  /* Page 4: Suspension, Engine & Transmission (Aligned Symmetrical Suspension Images) */
+  const F = state.suspension.front, R = state.suspension.rear;
+  const suspBlock = `<div class="pg-card">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <b style="font-size:12px;">Front Suspension</b>${pill(F.status)}
+        </div>
+        <div class="susp-photo-grid">
+          <div class="susp-photo-card"><div class="lbl">Front Right (FR)</div>${F.photoFR?`<img src="${F.photoFR}">`:'<div class="no-ph">No Photo</div>'}</div>
+          <div class="susp-photo-card"><div class="lbl">Front Left (FL)</div>${F.photoFL?`<img src="${F.photoFL}">`:'<div class="no-ph">No Photo</div>'}</div>
+        </div>
+      </div>
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <b style="font-size:12px;">Rear Suspension</b>${pill(R.status)}
+        </div>
+        <div class="susp-photo-grid">
+          <div class="susp-photo-card"><div class="lbl">Rear Right (RR)</div>${R.photoRR?`<img src="${R.photoRR}">`:'<div class="no-ph">No Photo</div>'}</div>
+          <div class="susp-photo-card"><div class="lbl">Rear Left (RL)</div>${R.photoRL?`<img src="${R.photoRL}">`:'<div class="no-ph">No Photo</div>'}</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+  const engineRows = ENGINE_ITEMS.map(name=>{ const rec=state.engine[name]; return `<div class="pg-strip si"><span>${name}</span>${pill(rec.status)}</div>`; }).join('');
+  const transRows = TRANSMISSION_ITEMS.map(name=>{ const rec=state.transmission[name]; return `<div class="pg-strip si"><span>${name}</span>${pill(rec.status)}</div>`; }).join('');
+
+  const mechanicalPage = `<div class="pg"><div class="pg-inner">
+    ${pageHead()}
+    ${headBar('4. Suspension System')}
+    ${suspBlock}
+    ${headBar('5. Engine Bay Checklist')}
+    <div class="pg-strip" style="margin-bottom:12px;">${engineRows}</div>
+    ${headBar('6. Transmission & Drivetrain')}
+    <div class="pg-strip">${transRows}</div>
+  </div><div class="pageno">Fixanycars &middot; ${today}</div></div>`;
+
+  /* Page 5: Interior & Exterior + Body Structure */
+  const intextRows = INTEXT_ITEMS.map((name,i)=>{
+    const rec = state.intext[name];
+    return `<div class="pg-pos-card"><div style="display:flex;justify-content:space-between;"><b style="font-size:10.5px;">${i+1}. ${name}</b>${pill(rec.status)}</div>
+      ${rec.note?`<div style="font-size:9px;color:#6c6c72;margin-top:2px;">${rec.note}</div>`:''}
+      ${rec.photo?ph(rec.photo):''}
+    </div>`;
+  }).join('');
+
+  const bodyCards = BODY_PANELS.map(name=>{
+    const rec = state.body[name];
+    return `<div class="pg-pos-card">
+      <b style="font-size:10.5px;">${name}</b>
+      <div style="font-size:9px; margin-top:2px; color:#6c6c72;">${rec.paint}${rec.damage.length? ' &middot; '+rec.damage.join(', ') : ''}</div>
+      ${rec.photo?ph(rec.photo):''}
+    </div>`;
+  }).join('');
+
+  const bodyIntextPage = `<div class="pg"><div class="pg-inner">
+    ${pageHead()}
+    ${headBar('7. Interior & Exterior Checklist')}
+    <div class="pg-grid3" style="margin-bottom:12px;">${intextRows}</div>
+    ${headBar('8. Body Structure & Paint Panels')}
+    <div class="pg-grid3">${bodyCards}</div>
+  </div><div class="pageno">Fixanycars &middot; ${today}</div></div>`;
+
+  /* Page 6: Electrical & Chassis */
+  function chunk(arr,n){ const out=[]; for(let i=0;i<arr.length;i+=n) out.push(arr.slice(i,i+n)); return out; }
+  const elecRows = ELECTRICAL_ITEMS.map(name=>{
+    const rec = state.electrical[name];
+    return `<div class="pg-strip si"><span>${name}</span>${pill(rec.status)}</div>`;
+  }).join('');
+
+  const chassisRows = CHASSIS_ITEMS.map((name,i)=>{
+    const rec = state.chassis[name];
+    return `<div class="pg-strip si"><span>${i+1}. ${name}</span>${pill(rec.status)}</div>`;
+  }).join('');
+
+  const elecChassisPage = `<div class="pg"><div class="pg-inner">
+    ${pageHead()}
+    ${headBar('9. Electrical System Checklist')}
+    <div class="pg-strip" style="margin-bottom:12px;">${elecRows}</div>
+    ${headBar('10. Chassis & Subframe Structural Checks')}
+    <div class="pg-strip">${chassisRows}</div>
+  </div><div class="pageno">Fixanycars &middot; ${today}</div></div>`;
+
+  /* Page 7: Photos, Comments & Disclaimer */
+  function photoBlock(cat,label){
+    if(!state.photos[cat].length) return '';
+    return `<div style="margin-bottom:10px;"><b style="font-size:11.5px;">${label}</b><div class="pg-photos" style="margin-top:4px;">${state.photos[cat].map(u=>`<img src="${u}">`).join('')}</div></div>`;
+  }
+
+  const photosAndCommentsPage = `<div class="pg"><div class="pg-inner">
+    ${pageHead()}
+    ${headBar('11. General Vehicle Overview Photos')}
+    ${photoBlock('exterior','Exterior Photos')}${photoBlock('interior','Interior Photos')}${photoBlock('engine','Engine Bay & Undercarriage')}
+    ${(!state.photos.exterior.length && !state.photos.interior.length && !state.photos.engine.length) ? '<div style="color:#a8a8ac;font-size:11px;margin-bottom:10px;">No general overview photos uploaded.</div>' : ''}
+    
+    ${headBar('12. Inspector Final Comments & Flagged Issues')}
+    <div class="pg-card" style="margin-bottom:10px;">${(state.comment||'No overall comment provided.').replace(/\n/g,'<br>')}</div>
+    <div class="pg-card" style="margin-bottom:10px;">
+      <b style="font-size:11px; color:var(--red); display:block; margin-bottom:4px;">SUMMARY OF FLAGGED DEFECTS:</b>
+      ${issues.length ? issues.map(i=>`<div class="pg-comment-line">&#9679; ${i}</div>`).join('') : '<div style="color:#6c6c72; font-size:11px;">No safety or mechanical defects flagged.</div>'}
+    </div>
+
+    ${headBar('13. Terms & Disclaimer')}
+    <div class="pg-card" style="font-size:10px; color:var(--grey-600); line-height:1.4;">
+      This Pre-Purchase Inspection report provides a visual and non-dismantling technical assessment of the specified vehicle at the exact time and date of inspection. Fixanycars inspectors examine observable components and run diagnostics; however, hidden internal mechanical, electronic, or frame defects not discernible without component teardown are beyond scope. Fixanycars assumes no warranty or guarantee regarding future vehicle performance, durability, or resale value.
+    </div>
+  </div><div class="pageno">Fixanycars &middot; ${today}</div></div>`;
+
+  /* Page 8: Thank you closing cover */
+  const thanks = `<div class="pg pg-cover" style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
+    ${LOGO_HTML}
+    <h1 style="font-size:32px; margin-top:20px;">THANK YOU FOR<br>CHOOSING <i>FIXANYCARS</i></h1>
+    <div class="st" style="margin-top:12px;">www.fixanycars.com &middot; +971 50 985 9109</div>
+  </div>`;
+
+  return [cover, detailsPage, wheelsBrakesPage, mechanicalPage, bodyIntextPage, elecChassisPage, photosAndCommentsPage, thanks].join('');
+}
+
+function printReport() {
+  const root = document.getElementById('pdfRoot');
+  root.innerHTML = buildPdfHTML();
+  document.body.classList.add('printing-pdf-root');
+  
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => {
+      document.body.classList.remove('printing-pdf-root');
+      root.innerHTML = '';
+    }, 500);
+  }, 200);
+}
+
+function generatePDF(){
+  const btn = document.getElementById('pdfBtn');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = 'Building report…'; 
+  btn.disabled = true;
+
+  showAlert('Generating PDF Report', 'Please wait while your vehicle inspection report is compiled...');
+
+  const root = document.getElementById('pdfRoot');
+  root.innerHTML = buildPdfHTML();
+
+  root.style.display = 'block';
+  root.style.position = 'fixed';
+  root.style.top = '0';
+  root.style.left = '0';
+  root.style.zIndex = '100000';
+  root.style.background = '#ffffff';
+
+  setTimeout(() => {
+    const vin = (state.meta.vin || 'VEHICLE').replace(/[^a-zA-Z0-9]/g,'');
+    const dateStr = (state.meta.date || new Date().toISOString().slice(0,10));
+    const filename = `Fixanycars_PPI_${vin}_${dateStr}.pdf`;
+
+    const opt = {
+      margin: 0,
+      filename: filename,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: 794
+      },
+      jsPDF: { unit: 'px', format: [794, 1123], orientation: 'portrait' },
+      pagebreak: { mode: ['css', 'legacy'] }
+    };
+
+    html2pdf().set(opt).from(root).save().then(() => {
+      root.style.display = 'none';
+      root.innerHTML = '';
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+      closeModal();
+    }).catch((e) => {
+      console.error('PDF generation error:', e);
+      root.style.display = 'none';
+      root.innerHTML = '';
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+      closeModal();
+      showAlert('PDF Export Error', 'Could not generate PDF download. Please click "Print Report" to save or print directly.');
+    });
+  }, 400);
+}
+</script>
+</body>
+</html>
